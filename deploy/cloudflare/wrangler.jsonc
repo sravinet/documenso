@@ -1,0 +1,66 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "documenso",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-15",
+  "observability": {
+    "enabled": true
+  },
+
+  // The unmodified Documenso Docker image runs inside Cloudflare Containers.
+  // Build context is the repo root because docker/Dockerfile copies the whole monorepo.
+  "containers": [
+    {
+      "class_name": "DocumensoContainer",
+      "image": "../../docker/Dockerfile",
+      "image_build_context": "../..",
+      "instance_type": "standard-1",
+      "max_instances": 5
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "DOCUMENSO",
+        "class_name": "DocumensoContainer"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DocumensoContainer"]
+    }
+  ],
+
+  // Keeps one instance awake so Documenso's in-process cron poller
+  // (reminders, expirations, cleanup) keeps running between user requests.
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+
+  // Optional: holds the .p12 signing certificate when its base64 form
+  // exceeds the 5 KB Worker secret limit. See README.md.
+  "r2_buckets": [
+    {
+      "binding": "SIGNING_CERT_BUCKET",
+      "bucket_name": "documenso-signing-cert"
+    }
+  ],
+
+  // Every string var and secret below is forwarded to the container as an
+  // environment variable, except CONTAINER_INSTANCE_COUNT and SIGNING_CERT_R2_KEY.
+  // Set secrets with `wrangler secret put <NAME>`; see README.md for the list.
+  "vars": {
+    "CONTAINER_INSTANCE_COUNT": "1",
+    "SIGNING_CERT_R2_KEY": "cert.p12",
+    // Background jobs call back into the app; keep that loopback inside the container.
+    "NEXT_PRIVATE_INTERNAL_WEBAPP_URL": "http://localhost:3000",
+    "NEXT_PRIVATE_SIGNING_TRANSPORT": "local",
+    "NEXT_PUBLIC_UPLOAD_TRANSPORT": "s3",
+    "NEXT_PRIVATE_UPLOAD_REGION": "auto",
+    "NEXT_PRIVATE_UPLOAD_FORCE_PATH_STYLE": "true"
+  }
+}
