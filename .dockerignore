@@ -34,3 +34,6 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# Deploy tooling (not part of the app image)
+deploy/

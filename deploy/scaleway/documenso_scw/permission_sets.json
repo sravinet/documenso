@@ -1,0 +1,645 @@
+{
+  "_source": {
+    "url": "https://raw.githubusercontent.com/scaleway/docs-content/main/pages/iam/reference-content/permission-sets.mdx",
+    "sha256": "d13f874ba480117681a74a3cc797fcbf5df7441e41d6daeb58e281b101c2b466",
+    "bytes": 32059,
+    "retrieved": "2026-08-24",
+    "parsed_by": "the file's own '## Scoped by Organization' / '## Scoped by Project' headings and its table rows",
+    "why": "ADR-0031 shipped a fabricated row, and #275 warned that a permission set named in a design document is a name someone later pastes into a policy. This snapshot is what provision/estate.py is allowed to name, and scripts/check_trail_boundary.py enforces that."
+  },
+  "_counts": {
+    "total": 157,
+    "Organization": 26,
+    "Project": 131
+  },
+  "permission_sets": {
+    "AbuseTicketManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "AllProductsFullAccess": {
+      "scope": "Project",
+      "section": "Permission sets for several / all Products"
+    },
+    "AllProductsReadOnly": {
+      "scope": "Project",
+      "section": "Permission sets for several / all Products"
+    },
+    "AppleSiliconFullAccess": {
+      "scope": "Project",
+      "section": "Bare Metal"
+    },
+    "AppleSiliconReadOnly": {
+      "scope": "Project",
+      "section": "Bare Metal"
+    },
+    "AuditTrailExportDelete": {
+      "scope": "Organization",
+      "section": null
+    },
+    "AuditTrailExportRead": {
+      "scope": "Organization",
+      "section": null
+    },
+    "AuditTrailFullAccess": {
+      "scope": "Organization",
+      "section": null
+    },
+    "AuditTrailReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "BillingManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "BillingReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "BlockStorageFullAccess": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "BlockStorageReadOnly": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ContainerRegistryFullAccess": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ContainerRegistryReadOnly": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ContainersFullAccess": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "ContainersPrivateAccess": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "ContainersReadOnly": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "DataWarehouseFullAccess": {
+      "scope": "Project",
+      "section": "Data & Analytics"
+    },
+    "DataWarehouseReadOnly": {
+      "scope": "Project",
+      "section": "Data & Analytics"
+    },
+    "DediboxConsoleFullAccess": {
+      "scope": "Project",
+      "section": "Bare Metal"
+    },
+    "DediboxFullAccess": {
+      "scope": "Project",
+      "section": "Bare Metal"
+    },
+    "DediboxReadOnly": {
+      "scope": "Project",
+      "section": "Bare Metal"
+    },
+    "DistributedDataLabFullAccess": {
+      "scope": "Project",
+      "section": "Data & Analytics"
+    },
+    "DistributedDataLabReadOnly": {
+      "scope": "Project",
+      "section": "Data & Analytics"
+    },
+    "DomainsDNSFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "DomainsDNSReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "EdgeServicesFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "EdgeServicesReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "ElasticMetalFullAccess": {
+      "scope": "Project",
+      "section": "Bare Metal"
+    },
+    "ElasticMetalReadOnly": {
+      "scope": "Project",
+      "section": "Bare Metal"
+    },
+    "EnvironmentalImpactReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "FileStorageFullAccess": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "FileStorageReadOnly": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "FunctionsFullAccess": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "FunctionsPrivateAccess": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "FunctionsReadOnly": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "GenerativeApisFullAccess": {
+      "scope": "Project",
+      "section": "AI"
+    },
+    "GenerativeApisModelAccess": {
+      "scope": "Project",
+      "section": "AI"
+    },
+    "IAMApplicationManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMApplicationReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMGroupManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMGroupReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMPolicyManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMPolicyReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMUserManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IAMUserReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "IPAMFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "IPAMReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "InferenceFullAccess": {
+      "scope": "Project",
+      "section": "AI"
+    },
+    "InferenceReadOnly": {
+      "scope": "Project",
+      "section": "AI"
+    },
+    "InstancesFullAccess": {
+      "scope": "Project",
+      "section": "Compute"
+    },
+    "InstancesReadOnly": {
+      "scope": "Project",
+      "section": "Compute"
+    },
+    "InstancesServerStart": {
+      "scope": "Project",
+      "section": "Compute"
+    },
+    "InstancesServerStop": {
+      "scope": "Project",
+      "section": "Compute"
+    },
+    "InterlinkFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "InterlinkPartnerFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "InterlinkPartnerReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "InterlinkReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "IoTFullAccess": {
+      "scope": "Project",
+      "section": "Integration Services"
+    },
+    "IoTReadOnly": {
+      "scope": "Project",
+      "section": "Integration Services"
+    },
+    "KafkaClusterFullAccess": {
+      "scope": "Project",
+      "section": "Data & Analytics"
+    },
+    "KafkaClusterReadOnly": {
+      "scope": "Project",
+      "section": "Data & Analytics"
+    },
+    "KeyManagerFullAccess": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeyCreate": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeyDecrypt": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeyDelete": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeyEncrypt": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeyRestore": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeySign": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeyVerify": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerKeyWrite": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KeyManagerReadOnly": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "KubernetesExternalNodeRegister": {
+      "scope": "Project",
+      "section": "Containers"
+    },
+    "KubernetesFullAccess": {
+      "scope": "Project",
+      "section": "Containers"
+    },
+    "KubernetesReadOnly": {
+      "scope": "Project",
+      "section": "Containers"
+    },
+    "KubernetesSystemMastersGroupAccess": {
+      "scope": "Project",
+      "section": "Containers"
+    },
+    "LoadBalancersFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "LoadBalancersReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "MailboxFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "MailboxReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "MessagingAndQueuingFullAccess": {
+      "scope": "Project",
+      "section": "Integration Services"
+    },
+    "MessagingAndQueuingReadOnly": {
+      "scope": "Project",
+      "section": "Integration Services"
+    },
+    "MongoDBFullAccess": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "MongoDBReadOnly": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "NotificationManagerFullAccess": {
+      "scope": "Organization",
+      "section": null
+    },
+    "NotificationManagerReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "ObjectStorageBucketPolicyFullAccess": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageBucketsDelete": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageBucketsRead": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageBucketsWrite": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageFullAccess": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageObjectsDelete": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageObjectsRead": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageObjectsWrite": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObjectStorageReadOnly": {
+      "scope": "Project",
+      "section": "Storage"
+    },
+    "ObservabilityFullAccess": {
+      "scope": "Project",
+      "section": "Monitoring"
+    },
+    "ObservabilityGrafanaEditor": {
+      "scope": "Project",
+      "section": "Monitoring"
+    },
+    "ObservabilityReadOnly": {
+      "scope": "Project",
+      "section": "Monitoring"
+    },
+    "OrganizationManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "OrganizationReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "PrivateNetworksFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "PrivateNetworksReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "ProjectManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "ProjectReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "QaaSFullAccess": {
+      "scope": "Project",
+      "section": "Labs"
+    },
+    "QaaSReadOnly": {
+      "scope": "Project",
+      "section": "Labs"
+    },
+    "RedisFullAccess": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "RedisReadOnly": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "RelationalDatabasesFullAccess": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "RelationalDatabasesReadOnly": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "SSHKeysFullAccess": {
+      "scope": "Project",
+      "section": "Compute"
+    },
+    "SSHKeysReadOnly": {
+      "scope": "Project",
+      "section": "Compute"
+    },
+    "SearchDBFullAccess": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "SearchDBReadOnly": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "SecretManagerFullAccess": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "SecretManagerReadOnly": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "SecretManagerSecretAccess": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "SecretManagerSecretCreate": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "SecretManagerSecretDelete": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "SecretManagerSecretRestore": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "SecretManagerSecretWrite": {
+      "scope": "Project",
+      "section": "Security & Identity"
+    },
+    "ServerlessJobsFullAccess": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "ServerlessJobsReadOnly": {
+      "scope": "Project",
+      "section": "Serverless Compute"
+    },
+    "ServerlessSQLDatabaseDataReadWrite": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "ServerlessSQLDatabaseFullAccess": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "ServerlessSQLDatabaseReadOnly": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "ServerlessSQLDatabaseReadWrite": {
+      "scope": "Project",
+      "section": "Databases"
+    },
+    "SiteToSiteVPNFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "SiteToSiteVPNReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "SupportTicketManager": {
+      "scope": "Organization",
+      "section": null
+    },
+    "SupportTicketReadOnly": {
+      "scope": "Organization",
+      "section": null
+    },
+    "TransactionalEmailBlocklistFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailBlocklistReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailDomainFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailDomainReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailEmailApiCreate": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailEmailFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailEmailReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailEmailSmtpCreate": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailOfferSubscriptionFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailOfferSubscriptionReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailPoolReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailProjectSettingsFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailProjectSettingsReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailWebhookFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "TransactionalEmailWebhookReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "VPCFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "VPCGatewayFullAccess": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "VPCGatewayReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "VPCReadOnly": {
+      "scope": "Project",
+      "section": "Network"
+    },
+    "WebHostingFullAccess": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    },
+    "WebHostingReadOnly": {
+      "scope": "Project",
+      "section": "Domains & Web Hosting"
+    }
+  }
+}

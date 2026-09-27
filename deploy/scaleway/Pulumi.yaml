@@ -1,0 +1,9 @@
+name: documenso
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: >-
+  Documenso on Scaleway: a long-lived `foundation` stack (retention archive, mail
+  domain) and ephemeral `session-<id>` stacks that live 48 hours, are archived
+  under object lock, then destroyed.
