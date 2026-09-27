@@ -87,19 +87,43 @@ if [ -z "$(scw_b iam policy list application-ids.0="$APPLICATION" -o json | jq -
   scw_b iam policy create "${args[@]}" -o json >/dev/null
 fi
 
-EXPIRES_AT="$(date -u -v+"${EXPIRY_DAYS}"d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "+${EXPIRY_DAYS} days" +%Y-%m-%dT%H:%M:%SZ)"
+utc_after() {
+  date -u -v+"$1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "+${1/d/ days}" +%Y-%m-%dT%H:%M:%SZ
+}
 
-KEY_JSON="$(scw_b iam api-key create application-id="$APPLICATION" default-project-id="$CONTROL_PROJECT" \
-  expires-at="$EXPIRES_AT" description="documenso provisioner" -o json)"
+# A session lives 48h and is reaped after; a key with less left than that is replaced.
+REUSE_IF_VALID_UNTIL="$(utc_after 3d)"
 
-scw config profile activate default >/dev/null 2>&1 || true
-scw -p "$TARGET_PROFILE" config set \
-  access-key="$(jq -r .access_key <<<"$KEY_JSON")" \
-  secret-key="$(jq -r .secret_key <<<"$KEY_JSON")" \
-  default-organization-id="$ORG" \
-  default-project-id="$CONTROL_PROJECT" \
-  default-region="$REGION" >/dev/null
-unset KEY_JSON
+CURRENT_KEY="$(scw -p "$TARGET_PROFILE" config get access-key 2>/dev/null || true)"
+CURRENT_KEY_JSON="{}"
+if [ -n "$CURRENT_KEY" ]; then
+  CURRENT_KEY_JSON="$(scw_b iam api-key get access-key="$CURRENT_KEY" -o json 2>/dev/null || echo "{}")"
+fi
+CURRENT_OWNER="$(jq -r '.APIKey.application_id // empty' <<<"$CURRENT_KEY_JSON")"
+CURRENT_EXPIRES="$(jq -r '.APIKey.expires_at // empty' <<<"$CURRENT_KEY_JSON")"
+
+if [ "$CURRENT_OWNER" = "$APPLICATION" ] && [[ "$CURRENT_EXPIRES" > "$REUSE_IF_VALID_UNTIL" ]]; then
+  # Re-running must not mint a key per run: keep the one that is still good.
+  EXPIRES_AT="$CURRENT_EXPIRES"
+else
+  EXPIRES_AT="$(utc_after "${EXPIRY_DAYS}d")"
+
+  KEY_JSON="$(scw_b iam api-key create application-id="$APPLICATION" default-project-id="$CONTROL_PROJECT" \
+    expires-at="$EXPIRES_AT" description="documenso provisioner" -o json)"
+
+  scw -p "$TARGET_PROFILE" config set \
+    access-key="$(jq -r .access_key <<<"$KEY_JSON")" \
+    secret-key="$(jq -r .secret_key <<<"$KEY_JSON")" \
+    default-organization-id="$ORG" \
+    default-project-id="$CONTROL_PROJECT" \
+    default-region="$REGION" >/dev/null
+  unset KEY_JSON
+
+  # Revoke the key this one replaces, but only if it was the provisioner's own.
+  if [ "$CURRENT_OWNER" = "$APPLICATION" ]; then
+    scw_b iam api-key delete access-key="$CURRENT_KEY" >/dev/null
+  fi
+fi
 
 STATE_BUCKET="documenso-pulumi-state-${ORG:0:8}"
 if ! scw -p "$TARGET_PROFILE" object bucket get "$STATE_BUCKET" region="$REGION" >/dev/null 2>&1; then
