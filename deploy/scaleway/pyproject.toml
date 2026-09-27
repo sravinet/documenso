@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["venv"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+# boto3/botocore ship no type information; their calls are confined to reaper.py.
+ignore_missing_imports = true
+files = ["documenso_scw", "session_ctl.py", "__main__.py"]

@@ -1,0 +1,100 @@
+name: Scaleway session reaper
+
+# Ends every Documenso signing session 48 hours after it opened:
+# seal (remove the container), archive (database backup + every upload version
+# into the object-locked retention bucket), verify against the manifest, destroy.
+# See deploy/scaleway/README.md.
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      session_id:
+        description: 'Reap one session now (leave empty to reap every expired session)'
+        required: false
+      force_before_expiry:
+        description: 'Reap before expiry (requires session_id)'
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - 'deploy/scaleway/**'
+      - '.github/workflows/scaleway-session-reaper.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scaleway-session-reaper
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: deploy/scaleway
+
+jobs:
+  test:
+    runs-on: ${{ vars.CI_RUNNER_DEFAULT || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m venv venv && venv/bin/pip install -r requirements.txt -r requirements-dev.txt
+      - run: venv/bin/ruff check . && venv/bin/ruff format --check .
+      - run: venv/bin/mypy
+      - run: venv/bin/python -m pytest -q -p no:warnings
+
+  reap:
+    needs: test
+    if: github.event_name != 'pull_request' && vars.DOCUMENSO_REAPER_ENABLED == 'true'
+    runs-on: ${{ vars.CI_RUNNER_DEFAULT || 'ubuntu-latest' }}
+    timeout-minutes: 180
+    env:
+      # Provisioner key (scripts/bootstrap-provisioner.sh): Pulumi and the state backend.
+      SCW_ACCESS_KEY: ${{ secrets.SCW_PROVISIONER_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_PROVISIONER_SECRET_KEY }}
+      SCW_DEFAULT_ORGANIZATION_ID: ${{ vars.SCW_ORGANIZATION_ID }}
+      SCW_DEFAULT_REGION: fr-par
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCW_PROVISIONER_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_PROVISIONER_SECRET_KEY }}
+      PULUMI_BACKEND_URL: ${{ vars.PULUMI_BACKEND_URL }}
+      PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+      # Archiver key (foundation stack output): the archive step uses only this.
+      ARCHIVER_ACCESS_KEY: ${{ secrets.DOCUMENSO_ARCHIVER_ACCESS_KEY }}
+      ARCHIVER_SECRET_KEY: ${{ secrets.DOCUMENSO_ARCHIVER_SECRET_KEY }}
+      SESSION_ID: ${{ inputs.session_id }}
+      FORCE: ${{ inputs.force_before_expiry }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: pulumi/actions@v6
+        with:
+          pulumi-version: 3.259.0
+      - run: python -m venv venv && venv/bin/pip install -r requirements.txt
+      - name: Reap
+        run: |
+          set -euo pipefail
+          if [ -n "${SESSION_ID}" ]; then
+            if [ "${FORCE}" = "true" ]; then
+              venv/bin/python session_ctl.py reap "${SESSION_ID}" --force-before-expiry --confirm "${SESSION_ID}"
+            else
+              venv/bin/python session_ctl.py reap "${SESSION_ID}"
+            fi
+            exit 0
+          fi
+
+          failed=0
+          for id in $(venv/bin/python session_ctl.py expired | venv/bin/python -c 'import json,sys; print(" ".join(json.load(sys.stdin)))'); do
+            echo "::group::reap ${id}"
+            if ! venv/bin/python session_ctl.py reap "${id}"; then
+              echo "::error::reaping ${id} failed; its archive was not verified, so it was not destroyed"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "${failed}"
