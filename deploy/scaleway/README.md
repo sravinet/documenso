@@ -88,6 +88,19 @@ pulumi up
 
 `essential` has no commitment and includes 300 emails a month; `scale` has a 30-day commitment.
 
+#### DNS on Cloudflare
+
+If the zone is on Cloudflare, Pulumi can publish the four TEM records (SPF, DKIM, DMARC, MX) there itself, reading their values from the TEM domain. Each session stack can do the same for its `CNAME`. Create a Cloudflare API token limited to **Zone → DNS → Edit** on that one zone, then set, on both the foundation and each session stack:
+
+```bash
+pulumi config set cloudflareZoneId <zone id>          # Cloudflare dashboard → zone Overview
+pulumi config set --secret cloudflareApiToken         # prompts; never pass the token as an argument
+```
+
+Every record is DNS only (`proxied=false`), because Scaleway has to see its own endpoint to verify the custom domain and issue its certificate. Leave `mailDomainAutoconfig` false; it writes Scaleway DNS instead. `dnsZone` (Scaleway DNS) and `cloudflareZoneId` are mutually exclusive.
+
+Cloudflare Email Service is **not** an alternative to TEM here. Its SMTP accepts port 465 only, and Serverless Containers block outbound 465 except to TEM.
+
 The lock configuration can also fail on the first `up`, when it is applied before the new bucket is ready. The second `up` applies it.
 
 TEM domain verification **can take up to 48 hours**, so do this well before the first session. For a domain outside Scaleway DNS, add the SPF, DKIM, DMARC and MX records the console shows.

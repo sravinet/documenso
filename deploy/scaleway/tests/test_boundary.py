@@ -33,6 +33,7 @@ PG_PRIVILEGE = "scaleway:databases/privilege:Privilege"
 CONTAINER = "scaleway:containers/container:Container"
 NAMESPACE = "scaleway:containers/namespace:Namespace"
 RECORD = "scaleway:domain/record:Record"
+CF_RECORD = "cloudflare:index/dnsRecord:DnsRecord"
 RANDOM_PASSWORD = "random:index/randomPassword:RandomPassword"
 RANDOM_STRING = "random:index/randomString:RandomString"
 
@@ -67,6 +68,14 @@ class Recorder(pulumi.runtime.Mocks):
             network = dict((inputs.get("privateNetwork") or {}))
             network.update({"hostname": f"{args.name}.internal", "ip": "10.0.0.5", "port": 5432})
             outputs["privateNetwork"] = network
+        elif args.typ == "scaleway:tem/domain:Domain":
+            # Shapes as the live foundation's TEM domain reported them.
+            name = inputs["name"]
+            outputs["spfConfig"] = "include:_spf.tem.scaleway.com"
+            outputs["dkimConfig"] = "v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkq"
+            outputs["dmarcName"] = f"_dmarc.{name}."
+            outputs["dmarcConfig"] = "v=DMARC1; p=none"
+            outputs["mxBlackhole"] = "blackhole.scw-tem.cloud."
         elif args.typ == CONTAINER:
             outputs["publicEndpoint"] = "https://documensosession-documenso.functions.fnc.fr-par.scw.cloud"
         elif args.typ == "scaleway:registry/namespace:Namespace":
@@ -360,3 +369,119 @@ def test_retention_must_be_at_least_one_year():
             mail_domain="example.com",
             mail_domain_autoconfig=False,
         )
+
+
+# ---- Cloudflare DNS -------------------------------------------------------------
+
+
+def test_foundation_publishes_tem_records_to_cloudflare_dns_only():
+    recorder = Recorder()
+    pulumi.runtime.set_mocks(recorder, project="documenso", stack="foundation", preview=False)
+
+    from documenso_scw import foundation
+
+    @pulumi.runtime.test
+    def run():
+        declared = foundation.declare(
+            organization_id="org-id",
+            region="fr-par",
+            retention_bucket_name="documenso-archive-test",
+            retention_years=1,
+            mail_domain="mail.sign.cybapi.com",
+            mail_domain_autoconfig=False,
+            cloudflare_zone_id="zone-id",
+            cloudflare_api_token=pulumi.Output.secret("cf-token"),
+        )
+        return pulumi.Output.all(*[record.id for record in declared.mail_dns.values()])
+
+    run()
+
+    records = {r.name: r.inputs for r in recorder.of(CF_RECORD)}
+    assert sorted(records) == ["mail-dkim", "mail-dmarc", "mail-mx", "mail-spf"]
+    for inputs in records.values():
+        assert inputs["zoneId"] == "zone-id"
+        assert inputs["proxied"] is False
+    assert records["mail-dkim"]["name"] == "mail-id._domainkey.mail.sign.cybapi.com"
+    assert records["mail-mx"]["priority"] == 10
+
+
+def test_session_cname_on_cloudflare_is_dns_only_and_precedes_the_domain_binding():
+    recorder = Recorder()
+    pulumi.runtime.set_mocks(recorder, project="documenso", stack="session-board-q4", preview=False)
+
+    from documenso_scw import session
+
+    @pulumi.runtime.test
+    def run():
+        declared = session.declare(
+            session_id="board-q4",
+            window=WINDOW,
+            phase="live",
+            organization_id="org-id",
+            region="fr-par",
+            hostname="sign.cybapi.com",
+            dns_zone=None,
+            image="docker.io/documenso/documenso:v2.18.0",
+            cpu_limit_mvcpu=2000,
+            memory_gib=4,
+            max_scale=3,
+            db_node_type="DB-PRO2-XXS",
+            db_volume_gib=10,
+            mail_project_id="mail-id",
+            mail_from_address="no-reply@mail.sign.cybapi.com",
+            mail_from_name="Documenso",
+            archiver_application_id="archiver-id",
+            signing_certificate_base64=pulumi.Output.secret("Y2VydA=="),
+            signing_passphrase=pulumi.Output.secret("pass"),
+            cloudflare_zone_id="zone-id",
+            cloudflare_api_token=pulumi.Output.secret("cf-token"),
+        )
+        assert declared.cloudflare_web_record is not None
+        assert declared.container_domain is not None
+        return pulumi.Output.all(declared.cloudflare_web_record.id, declared.container_domain.id)
+
+    run()
+
+    [record] = recorder.of(CF_RECORD)
+    assert record.inputs["type"] == "CNAME"
+    assert record.inputs["name"] == "sign.cybapi.com"
+    assert record.inputs["content"] == "documensosession-documenso.functions.fnc.fr-par.scw.cloud"
+    assert record.inputs["proxied"] is False
+    assert recorder.of(RECORD) == []
+
+
+def test_scaleway_and_cloudflare_dns_are_mutually_exclusive():
+    with pytest.raises(Exception, match="not both"):
+        _declare_session_with(dns_zone="example.com", cloudflare_zone_id="zone-id")
+
+
+def _declare_session_with(**overrides):
+    recorder = Recorder()
+    pulumi.runtime.set_mocks(recorder, project="documenso", stack="session-board-q4", preview=False)
+
+    from documenso_scw import session
+
+    kwargs = dict(
+        session_id="board-q4",
+        window=WINDOW,
+        phase="live",
+        organization_id="org-id",
+        region="fr-par",
+        hostname="sign.example.com",
+        dns_zone=None,
+        image="img",
+        cpu_limit_mvcpu=2000,
+        memory_gib=4,
+        max_scale=3,
+        db_node_type="DB-PRO2-XXS",
+        db_volume_gib=10,
+        mail_project_id="mail-id",
+        mail_from_address="a@example.com",
+        mail_from_name="D",
+        archiver_application_id="archiver-id",
+        signing_certificate_base64="Y2VydA==",
+        signing_passphrase="pass",
+        cloudflare_api_token="cf-token",
+    )
+    kwargs.update(overrides)
+    session.declare(**kwargs)

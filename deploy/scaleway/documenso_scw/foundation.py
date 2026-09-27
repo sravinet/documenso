@@ -19,9 +19,10 @@ from __future__ import annotations
 import dataclasses
 
 import pulumi
+import pulumi_cloudflare as cloudflare
 from pulumiverse_scaleway import account, iam, object as object_storage, tem
 
-from documenso_scw import grants, naming
+from documenso_scw import cloudflare_dns, grants, naming
 
 
 @dataclasses.dataclass(frozen=True)
@@ -34,6 +35,7 @@ class Foundation:
     archiver_policy: iam.Policy
     archiver_key: iam.ApiKey
     mail_domain: tem.Domain
+    mail_dns: dict[str, cloudflare.DnsRecord]
 
 
 def declare(
@@ -44,6 +46,8 @@ def declare(
     retention_years: int,
     mail_domain: str,
     mail_domain_autoconfig: bool,
+    cloudflare_zone_id: str | None = None,
+    cloudflare_api_token: pulumi.Input[str] | None = None,
 ) -> Foundation:
     if retention_years < 1:
         raise ValueError("retention_years must be at least 1: a lock of zero is no lock.")
@@ -136,6 +140,39 @@ def declare(
         autoconfig=mail_domain_autoconfig,
     )
 
+    mail_dns: dict[str, cloudflare.DnsRecord] = {}
+    if cloudflare_zone_id:
+        if mail_domain_autoconfig:
+            raise ValueError("mailDomainAutoconfig writes Scaleway DNS; it cannot be combined with a Cloudflare zone.")
+        if cloudflare_api_token is None:
+            raise ValueError("cloudflareZoneId is set but cloudflareApiToken is not.")
+
+        specs = pulumi.Output.all(
+            mail.id,
+            mail_domain_resource.spf_config,
+            mail_domain_resource.dkim_config,
+            mail_domain_resource.dmarc_name,
+            mail_domain_resource.dmarc_config,
+            mail_domain_resource.mx_blackhole,
+        ).apply(
+            lambda values: cloudflare_dns.mail_records(
+                domain=mail_domain,
+                mail_project_id=values[0],
+                spf_include=values[1],
+                dkim=values[2],
+                dmarc_name=values[3],
+                dmarc=values[4],
+                mx_host=values[5],
+            )
+        )
+        mail_dns = cloudflare_dns.declare(
+            specs,
+            logical_names=cloudflare_dns.MAIL_RECORD_NAMES,
+            zone_id=cloudflare_zone_id,
+            cloudflare_provider=cloudflare_dns.provider("cloudflare", cloudflare_api_token),
+            comment="documenso TEM (deploy/scaleway foundation)",
+        )
+
     return Foundation(
         retention=retention,
         mail=mail,
@@ -145,4 +182,5 @@ def declare(
         archiver_policy=archiver_policy,
         archiver_key=archiver_key,
         mail_domain=mail_domain_resource,
+        mail_dns=mail_dns,
     )

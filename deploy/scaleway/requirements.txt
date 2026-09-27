@@ -5,6 +5,8 @@
 pulumi==3.259.0
 pulumiverse-scaleway==1.54.0
 pulumi-random==4.21.1
+# DNS for zones hosted on Cloudflare (cloudflare_dns.py).
+pulumi-cloudflare==6.21.0
 # The reaper: S3 copy into the retention bucket.
 boto3==1.40.40
 botocore==1.40.40

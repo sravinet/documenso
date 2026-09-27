@@ -28,6 +28,8 @@ if stack == naming.FOUNDATION_STACK:
         retention_years=config.require_int("retentionYears"),
         mail_domain=config.require("mailDomain"),
         mail_domain_autoconfig=config.get_bool("mailDomainAutoconfig") or False,
+        cloudflare_zone_id=config.get("cloudflareZoneId"),
+        cloudflare_api_token=config.get_secret("cloudflareApiToken"),
     )
 
     pulumi.export("region", region)
@@ -65,6 +67,8 @@ else:
         archiver_application_id=base.require_output("archiver_application_id"),
         signing_certificate_base64=config.require_secret("signingCertificate"),
         signing_passphrase=config.require_secret("signingPassphrase"),
+        cloudflare_zone_id=config.get("cloudflareZoneId"),
+        cloudflare_api_token=config.get_secret("cloudflareApiToken"),
     )
 
     pulumi.export("session_id", session_id)

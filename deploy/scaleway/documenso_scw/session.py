@@ -21,6 +21,7 @@ import urllib.parse
 from typing import Any
 
 import pulumi
+import pulumi_cloudflare as cloudflare
 import pulumi_random as random
 from pulumiverse_scaleway import (
     account,
@@ -33,7 +34,7 @@ from pulumiverse_scaleway import (
     registry,
 )
 
-from documenso_scw import app_env, grants, naming
+from documenso_scw import app_env, cloudflare_dns, grants, naming
 from documenso_scw.window import SessionWindow, format_timestamp
 
 PHASES = ("prepare", "live", "sealed")
@@ -66,6 +67,7 @@ class Session:
     container: containers.Container | None
     container_domain: containers.Domain | None
     dns_record: domain.Record | None
+    cloudflare_web_record: cloudflare.DnsRecord | None
     webapp_url: str
 
 
@@ -117,9 +119,15 @@ def declare(
     archiver_application_id: pulumi.Input[str],
     signing_certificate_base64: pulumi.Input[str],
     signing_passphrase: pulumi.Input[str],
+    cloudflare_zone_id: str | None = None,
+    cloudflare_api_token: pulumi.Input[str] | None = None,
 ) -> Session:
     if phase not in PHASES:
         raise ValueError(f"phase must be one of {PHASES}, got {phase!r}.")
+    if dns_zone and cloudflare_zone_id:
+        raise ValueError("set dnsZone (Scaleway DNS) or cloudflareZoneId, not both.")
+    if cloudflare_zone_id and cloudflare_api_token is None:
+        raise ValueError("cloudflareZoneId is set but cloudflareApiToken is not.")
 
     project_name = naming.session_project(session_id)
     credentials_expire_at = format_timestamp(window.credentials_expire_at)
@@ -368,6 +376,7 @@ def declare(
     container: containers.Container | None = None
     container_domain: containers.Domain | None = None
     dns_record: domain.Record | None = None
+    cloudflare_web_record: cloudflare.DnsRecord | None = None
 
     if phase == "live":
         container = containers.Container(
@@ -420,12 +429,26 @@ def declare(
                 ttl=300,
             )
 
+        if cloudflare_zone_id and cloudflare_api_token is not None:
+            specs = container.public_endpoint.apply(
+                lambda endpoint: [cloudflare_dns.web_record(hostname=hostname, target=_host(endpoint))]
+            )
+            cloudflare_web_record = cloudflare_dns.declare(
+                specs,
+                logical_names=["web"],
+                zone_id=cloudflare_zone_id,
+                cloudflare_provider=cloudflare_dns.provider("cloudflare", cloudflare_api_token),
+                comment=f"documenso session {session_id} (deploy/scaleway)",
+            )["web"]
+
+        cname: list[pulumi.Resource] = [r for r in (dns_record, cloudflare_web_record) if r is not None]
         container_domain = containers.Domain(
             "documenso",
             container_id=container.id,
             hostname=hostname,
             region=region,
-            opts=pulumi.ResourceOptions(depends_on=[dns_record] if dns_record else []),
+            # The CNAME must exist first: Scaleway verifies it before binding the domain.
+            opts=pulumi.ResourceOptions(depends_on=cname),
         )
 
     return Session(
@@ -449,6 +472,7 @@ def declare(
         container=container,
         container_domain=container_domain,
         dns_record=dns_record,
+        cloudflare_web_record=cloudflare_web_record,
         webapp_url=webapp_url,
     )
 
