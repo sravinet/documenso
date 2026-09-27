@@ -121,6 +121,10 @@ def declare(
         application_id=archiver.id,
         default_project_id=retention.id,
         description="documenso archiver (used by the session reaper)",
+        # Scaleway stamps a default expiry (one year) on keys created without one.
+        # Without this, every `pulumi up` sees that as drift and replaces the key,
+        # silently invalidating the copy the reaper holds.
+        opts=pulumi.ResourceOptions(ignore_changes=["expiresAt"]),
     )
 
     mail_domain_resource = tem.Domain(

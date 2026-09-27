@@ -79,6 +79,17 @@ pulumi config set mailDomainAutoconfig true   # only if the domain is in Scalewa
 pulumi up
 ```
 
+The first `up` creates everything except the TEM domain. Scaleway refuses a domain (`403 No active offer subscription`) until the mail Project subscribes to an offer, and the Pulumi provider cannot create that subscription. Subscribe once, then run `up` again:
+
+```bash
+scw tem offers update project-id=$(pulumi stack output mail_project_id) name=essential region=fr-par
+pulumi up
+```
+
+`essential` has no commitment and includes 300 emails a month; `scale` has a 30-day commitment.
+
+The lock configuration can also fail on the first `up`, when it is applied before the new bucket is ready. The second `up` applies it.
+
 TEM domain verification **can take up to 48 hours**, so do this well before the first session. For a domain outside Scaleway DNS, add the SPF, DKIM, DMARC and MX records the console shows.
 
 Save the archiver key for the reaper:
